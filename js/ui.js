@@ -920,6 +920,36 @@
     overlay.hidden = false;
   }
 
+  // ---- Install-as-app button ----------------------------------------------
+  function setupInstallButton() {
+    var btn = $('#install-btn');
+    if (!btn) return;
+    var deferred = null;
+    var standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+                     window.navigator.standalone === true;
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+    // Android / desktop Chromium fire this when the app is installable.
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferred = e;
+      if (!standalone) btn.hidden = false;
+    });
+    window.addEventListener('appinstalled', function () { btn.hidden = true; });
+
+    // iOS Safari has no prompt event — offer instructions instead.
+    if (isIOS && !standalone) btn.hidden = false;
+
+    btn.addEventListener('click', function () {
+      if (deferred) {
+        deferred.prompt();
+        deferred.userChoice.then(function () { deferred = null; btn.hidden = true; });
+      } else {
+        toast('To install: tap the Share icon, then "Add to Home Screen".');
+      }
+    });
+  }
+
   // ---- Wire up ------------------------------------------------------------
   function init() {
     $('#new-game-btn').addEventListener('click', function () {
@@ -941,6 +971,7 @@
     $('#layoff-btn').addEventListener('click', onLayoffBtn);
     $('#discard-btn').addEventListener('click', onDiscard);
     $('#difficulty-select').addEventListener('change', saveMatch);
+    setupInstallButton();
     // Rack drag-to-reorder: track pointer at the document level so the drag
     // continues even if the pointer leaves the tile.
     document.addEventListener('pointermove', onRackPointerMove, { passive: false });

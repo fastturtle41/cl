@@ -2,8 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Okey 101</title>
+
+  <!-- Installable web app (PWA) -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0f6b3e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Okey 101" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -165,5 +176,15 @@
   <script src="js/game.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/ui.js"></script>
+
+  <!-- Register the service worker so the installed app works offline.
+       Harmless where it isn't available (e.g. file:// or a sandboxed host). -->
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      window.addEventListener('load', function () {
+        try { navigator.serviceWorker.register('sw.js').catch(function () {}); } catch (e) {}
+      });
+    }
+  </script>
 </body>
 </html>

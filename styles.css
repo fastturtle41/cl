@@ -323,7 +323,9 @@ html, body {
   #app {
     height: 100%;
     gap: 4px;
-    padding: 4px;
+    /* clear the notch / home indicator when installed as a standalone app */
+    padding: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right))
+             max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr) auto;
     grid-template-areas: "top" "table" "rack";

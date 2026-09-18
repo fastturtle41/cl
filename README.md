@@ -12,6 +12,24 @@ three AI opponents. No server, no internet, no build step — just open
 Open **`index.html`** (double-click it, or serve the folder). Pick an opponent
 difficulty, hit **New Game**, and play.
 
+## Install as an app (PWA)
+
+The game is a Progressive Web App, so it can be installed to your phone,
+tablet or desktop and run full-screen and offline.
+
+1. Host the folder over HTTPS. The easy route is **GitHub Pages**: in the
+   repo, **Settings → Pages → Build and deployment → Deploy from a branch**,
+   pick this branch and the `/ (root)` folder, and **Save**. After a minute
+   your app is at `https://<user>.github.io/cl/`.
+2. Open that URL:
+   - **iPhone / iPad (Safari):** Share → **Add to Home Screen**.
+   - **Android / desktop Chrome/Edge:** use the **Install** icon in the
+     address bar (or the menu → *Install app*).
+
+It then launches from its own icon, full-screen, and works with no network
+(a service worker caches the app shell). Serving locally works too:
+`python3 -m http.server` then open `http://localhost:8000`.
+
 ### The rules in brief
 
 - **Tiles (106):** numbers 1–13 in four colours (red, yellow, black, blue),

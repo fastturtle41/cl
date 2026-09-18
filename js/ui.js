@@ -618,6 +618,13 @@
     render();
   }
 
+  // Return every staged meld's tiles to the hand (they were never removed from
+  // game.hands, only hidden), leaving staging empty.
+  function clearStaging() {
+    stagedMelds = [];
+    stagedIds = {};
+  }
+
   function onUndoStage() {
     var m = stagedMelds.pop();
     if (!m) return;
@@ -631,8 +638,7 @@
     var r = game.layMelds(HUMAN, groups);
     if (!r.ok) { toast(r.reason); return; }
     log('You laid ' + r.melds + ' meld(s) worth ' + r.value + ' pts.', 'you');
-    stagedMelds = [];
-    stagedIds = {};
+    clearStaging();
     selected = {};
     render();
     checkAutoWin();
@@ -673,6 +679,8 @@
     if (!r.ok) { toast(r.reason); return; }
     log('You discarded ' + tileName(tile) + '.', 'you');
     selected = {};
+    // Uncommitted staged melds do not carry across turns — return them to hand.
+    clearStaging();
     // discard() may have ended the round (you went out) or advanced the turn.
     advance();
   }
@@ -694,6 +702,7 @@
 
   function beginHumanTurn() {
     busy = false;
+    clearStaging(); // each turn starts with a clean staging tray
     if (game.phase === Game.PHASE.DRAW) {
       log('Your turn — draw a tile.', 'you');
     } else {

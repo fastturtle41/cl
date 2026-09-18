@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Okey 101</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <h1>Okey&nbsp;101</h1>
+      <div id="okey-info">
+        <div class="info-block">
+          <span class="info-label">Indicator</span>
+          <div id="indicator-tile" class="tile mini"></div>
+        </div>
+        <div class="info-block">
+          <span class="info-label">Okey (wild)</span>
+          <div id="okey-tile" class="tile mini"></div>
+        </div>
+        <div class="info-block">
+          <span class="info-label">Stock</span>
+          <span id="stock-count" class="info-value">–</span>
+        </div>
+      </div>
+      <div id="setup">
+        <label>Opponents:
+          <select id="difficulty-select">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+            <option value="expert" selected>Expert</option>
+            <option value="mixed">Mixed (E/M/H)</option>
+          </select>
+        </label>
+        <button id="new-game-btn">New Game</button>
+      </div>
+    </header>
+
+    <main id="table">
+      <!-- Opponents -->
+      <div class="seat seat-top" id="seat-2">
+        <div class="player-card">
+          <div class="avatar">🤖</div>
+          <div class="player-meta">
+            <span class="player-name"></span>
+            <span class="player-diff"></span>
+          </div>
+          <div class="player-stats">
+            <span class="tile-count">21</span> tiles ·
+            <span class="score">0</span> pts
+          </div>
+          <div class="opened-badge" hidden>OPENED</div>
+        </div>
+        <div class="mini-hand"></div>
+        <div class="discard-pile" title="discard pile"></div>
+      </div>
+
+      <div class="seat seat-left" id="seat-3">
+        <div class="player-card">
+          <div class="avatar">🤖</div>
+          <div class="player-meta">
+            <span class="player-name"></span>
+            <span class="player-diff"></span>
+          </div>
+          <div class="player-stats">
+            <span class="tile-count">21</span> tiles ·
+            <span class="score">0</span> pts
+          </div>
+          <div class="opened-badge" hidden>OPENED</div>
+        </div>
+        <div class="mini-hand"></div>
+        <div class="discard-pile takeable" title="you draw from here"></div>
+      </div>
+
+      <div class="seat seat-right" id="seat-1">
+        <div class="player-card">
+          <div class="avatar">🤖</div>
+          <div class="player-meta">
+            <span class="player-name"></span>
+            <span class="player-diff"></span>
+          </div>
+          <div class="player-stats">
+            <span class="tile-count">21</span> tiles ·
+            <span class="score">0</span> pts
+          </div>
+          <div class="opened-badge" hidden>OPENED</div>
+        </div>
+        <div class="mini-hand"></div>
+        <div class="discard-pile" title="discard pile"></div>
+      </div>
+
+      <!-- Center: stock + melds -->
+      <div id="center">
+        <div id="stock" class="stock" title="Draw a tile">
+          <div class="stock-back"></div>
+          <span id="stock-label">Stock</span>
+        </div>
+        <div id="melds-area">
+          <div class="melds-hint">Melds on the table appear here</div>
+        </div>
+      </div>
+
+      <!-- Human seat -->
+      <div class="seat seat-bottom" id="seat-0">
+        <div class="player-card you">
+          <div class="avatar">🧑</div>
+          <div class="player-meta">
+            <span class="player-name">You</span>
+            <span class="player-diff"></span>
+          </div>
+          <div class="player-stats">
+            <span class="tile-count">21</span> tiles ·
+            <span class="score">0</span> pts
+          </div>
+          <div class="opened-badge" hidden>OPENED</div>
+        </div>
+        <div class="discard-pile you-discard" title="your discards"></div>
+      </div>
+    </main>
+
+    <section id="rack-area">
+      <div id="staging-tray" hidden>
+        <span class="tray-label">Staged melds:</span>
+        <div id="staged-list"></div>
+        <span id="staged-total">Total: 0</span>
+      </div>
+      <div id="rack"></div>
+      <div id="controls">
+        <button id="draw-stock-btn" disabled>Draw Stock</button>
+        <button id="take-discard-btn" disabled>Take Discard</button>
+        <button id="sort-btn">Sort</button>
+        <button id="group-btn" disabled>Group Selected ▸ Stage</button>
+        <button id="commit-btn" disabled>Lay Melds</button>
+        <button id="layoff-btn" disabled>Lay Off</button>
+        <button id="discard-btn" disabled>Discard Selected</button>
+        <button id="undo-stage-btn" disabled>Undo Stage</button>
+      </div>
+    </section>
+
+    <aside id="sidebar">
+      <h2>Log</h2>
+      <div id="log"></div>
+    </aside>
+
+    <div id="overlay" hidden>
+      <div id="overlay-card">
+        <h2 id="overlay-title">Round Over</h2>
+        <div id="overlay-body"></div>
+        <button id="overlay-btn">Next Round</button>
+      </div>
+    </div>
+
+    <div id="toast" hidden></div>
+  </div>
+
+  <script src="js/engine.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ai.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>

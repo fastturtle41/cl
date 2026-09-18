@@ -44,7 +44,20 @@ difficulty, hit **New Game**, and play.
 3. **Discard** — select one tile and press **Discard Selected** (or click your
    discard slot).
 
-Use **Sort** any time to tidy your rack.
+Use **Sort** any time to tidy your rack, or **Hint** for advice — it points to
+the best draw, highlights an opening set (with its point total), flags a tile
+you can lay off, or marks the safest discard.
+
+**Laying off** is one click: with a tile selected, any table meld it can legally
+join lights up — click the glowing meld to add it.
+
+**Match play:** rounds accumulate into a match. The header shows the round
+number, the round-over screen shows who's leading, and your scores and
+difficulty choice are saved in the browser (`localStorage`), so a refresh
+resumes the match. **New Game** starts a fresh match; **Next Round** continues
+the current one.
+
+![hint](assets/hint.png)
 
 ## Difficulty levels
 

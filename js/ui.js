@@ -16,10 +16,28 @@
 
   var game = null;
   var scores = [0, 0, 0, 0];
+  var roundNum = 1;
   var selected = {};          // tileId -> true
   var stagedIds = {};         // tileId -> true (in a staged meld)
   var stagedMelds = [];       // [{ ids:[], points, type }]
   var busy = false;           // AI thinking, ignore human input
+
+  // ---- Persistence (match scores + difficulty survive a refresh) ----------
+  var STORE_KEY = 'okey101.match';
+  function saveMatch() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        scores: scores, roundNum: roundNum, difficulty: $('#difficulty-select').value
+      }));
+    } catch (e) { /* private mode / disabled storage: ignore */ }
+  }
+  function loadMatch() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) { return null; }
+  }
 
   // ---- DOM helpers --------------------------------------------------------
   function $(sel) { return document.querySelector(sel); }
@@ -72,7 +90,13 @@
     return [v, v, v];
   }
 
-  function newRound() {
+  // mode: 'new'    -> fresh match (round 1, zeroed scores)
+  //       'next'   -> next round of the current match (keep scores)
+  //       'resume' -> re-deal the current round/scores as loaded from storage
+  function newRound(mode) {
+    mode = mode || 'new';
+    if (mode === 'new') { scores = [0, 0, 0, 0]; roundNum = 1; }
+    else if (mode === 'next') { roundNum += 1; }
     var diffs = difficultiesFromSelect();
     game = new Game({
       humanSeat: HUMAN,
@@ -89,7 +113,9 @@
     busy = false;
     $('#overlay').hidden = true;
     $('#log').innerHTML = '';
-    log('New round dealt. Okey (wild) is ' + game.okey.color + ' ' + game.okey.num + '.');
+    $('#round-count').textContent = roundNum;
+    saveMatch();
+    log('Round ' + roundNum + ' dealt. Okey (wild) is ' + game.okey.color + ' ' + game.okey.num + '.');
     log('Starter: ' + NAMES[game.starter] + '.');
     render();
     routeTurn();
@@ -209,11 +235,20 @@
       area.appendChild(el('div', 'melds-hint', 'Melds on the table appear here'));
       return;
     }
+    // If exactly one tile is selected and we've opened, glow the melds it can
+    // legally join so the player can just click a target to lay off.
+    var selIds = Object.keys(selected);
+    var layoffTile = null;
+    if (selIds.length === 1 && game.opened[HUMAN] && game.current === HUMAN &&
+        game.phase === Game.PHASE.ACTION && !busy) {
+      layoffTile = findHandTile(selIds[0]);
+    }
     game.melds.forEach(function (meld, idx) {
       var m = el('div', 'table-meld');
       m.appendChild(el('span', 'owner-tag', NAMES[meld.owner].slice(0, 3)));
       meld.tiles.forEach(function (t) { m.appendChild(tileEl(t, 'small')); });
       m.dataset.meldIndex = idx;
+      if (layoffTile && Okey.canLayOff(layoffTile, meld, game.okey)) m.classList.add('layoff-target');
       m.addEventListener('click', function () { onMeldClick(idx); });
       area.appendChild(m);
     });
@@ -272,6 +307,93 @@
     $('#undo-stage-btn').disabled = !actionPhase || stagedMelds.length === 0;
     $('#discard-btn').disabled = !actionPhase || selCount !== 1;
     $('#layoff-btn').disabled = !actionPhase || !game.opened[HUMAN] || selCount !== 1;
+  }
+
+  // ---- Hint ---------------------------------------------------------------
+  function clearHints() {
+    document.querySelectorAll('#rack .tile.hint').forEach(function (e) { e.classList.remove('hint'); });
+  }
+  function markHint(ids) {
+    clearHints();
+    ids.forEach(function (id) {
+      var e = document.querySelector('#rack .tile[data-tile-id="' + id + '"]');
+      if (e) e.classList.add('hint');
+    });
+  }
+  function groupsValue(groups) {
+    var total = 0;
+    for (var i = 0; i < groups.length; i++) {
+      var tiles = groups[i].map(findHandTile);
+      if (tiles.indexOf(null) !== -1) return -1;
+      var res = Okey.validateMeld(tiles, game.okey);
+      if (!res.valid) return -1;
+      total += res.points;
+    }
+    return total;
+  }
+
+  function onHint() {
+    if (busy || !game || game.roundOver || game.current !== HUMAN) { toast('Not your turn yet.'); return; }
+    var profile = AI.PROFILES.expert;
+    var okey = game.okey;
+    var hand = game.hands[HUMAN];
+
+    if (game.phase === Game.PHASE.DRAW) {
+      var src = AI.chooseDraw(game, HUMAN, profile);
+      toast(src === 'discard' ? 'Tip: take the tile from the discard on your left.'
+                              : 'Tip: draw a fresh tile from the stock.');
+      return;
+    }
+
+    // Can we go out this turn?
+    for (var i = 0; i < hand.length; i++) {
+      var without = hand.slice(0, i).concat(hand.slice(i + 1));
+      var r = Okey.solveHand(without, okey, { mode: 'partition', budget: profile.budget });
+      if (r && r.leftover === 0) {
+        var groups = AI.meldsToTileGroups(without, r, okey);
+        if (!groups) continue;
+        if (!game.opened[HUMAN] && groupsValue(groups) < Okey.OPEN_THRESHOLD) continue;
+        var allIds = [];
+        groups.forEach(function (g) { allIds = allIds.concat(g); });
+        markHint(allIds);
+        toast('You can GO OUT! Lay these melds, then discard ' + tileName(hand[i]) + '.');
+        return;
+      }
+    }
+
+    if (!game.opened[HUMAN]) {
+      var best = Okey.solveHand(hand, okey, { mode: 'value', budget: profile.budget });
+      if (best && best.value >= Okey.OPEN_THRESHOLD) {
+        var og = AI.meldsToTileGroups(hand, best, okey);
+        if (og) {
+          var ids = [];
+          og.forEach(function (g) { ids = ids.concat(g); });
+          markHint(ids);
+          toast('You can open — highlighted tiles make ' + best.value + ' points (need 101).');
+          return;
+        }
+      }
+      var need = best ? (Okey.OPEN_THRESHOLD - best.value) : Okey.OPEN_THRESHOLD;
+      toast('Not enough to open yet (best ' + (best ? best.value : 0) + '/101). Keep building — draw and discard.');
+      var d0 = AI.chooseDiscard(game, HUMAN, profile);
+      markHint([d0]);
+      return;
+    }
+
+    // Opened: suggest a lay-off if one exists, else a discard.
+    for (var h = 0; h < hand.length; h++) {
+      if (Okey.isWild(hand[h], okey)) continue;
+      for (var m = 0; m < game.melds.length; m++) {
+        if (Okey.canLayOff(hand[h], game.melds[m], okey)) {
+          markHint([hand[h].id]);
+          toast('Tip: select this tile and click the glowing meld to lay it off.');
+          return;
+        }
+      }
+    }
+    var d = AI.chooseDiscard(game, HUMAN, profile);
+    markHint([d]);
+    toast('Nothing new to meld — best discard is highlighted.');
   }
 
   // ---- Human interactions -------------------------------------------------
@@ -442,14 +564,22 @@
       table.appendChild(tr);
     }
     body.appendChild(table);
-    body.appendChild(el('p', null, 'Lower total is better.'));
+    // Standings note: who currently leads (lowest total).
+    var lowIdx = 0;
+    for (var q = 1; q < 4; q++) if (scores[q] < scores[lowIdx]) lowIdx = q;
+    body.appendChild(el('p', null, 'Lower total is better — ' +
+      (lowIdx === HUMAN ? 'you are' : NAMES[lowIdx] + ' is') + ' leading after round ' + roundNum + '.'));
+    saveMatch();
     overlay.hidden = false;
   }
 
   // ---- Wire up ------------------------------------------------------------
   function init() {
-    $('#new-game-btn').addEventListener('click', function () { scores = [0, 0, 0, 0]; newRound(); });
-    $('#overlay-btn').addEventListener('click', function () { newRound(); });
+    $('#new-game-btn').addEventListener('click', function () {
+      if (roundNum > 1 && !confirm('Start a new match? Current scores will be cleared.')) return;
+      newRound('new');
+    });
+    $('#overlay-btn').addEventListener('click', function () { newRound('next'); });
     $('#draw-stock-btn').addEventListener('click', onDrawStock);
     $('#take-discard-btn').addEventListener('click', onTakeDiscard);
     $('#sort-btn').addEventListener('click', function () {
@@ -457,11 +587,13 @@
       game.hands[HUMAN] = Okey.sortHand(game.hands[HUMAN], game.okey);
       render();
     });
+    $('#hint-btn').addEventListener('click', onHint);
     $('#group-btn').addEventListener('click', onGroup);
     $('#commit-btn').addEventListener('click', onCommit);
     $('#undo-stage-btn').addEventListener('click', onUndoStage);
     $('#layoff-btn').addEventListener('click', onLayoffBtn);
     $('#discard-btn').addEventListener('click', onDiscard);
+    $('#difficulty-select').addEventListener('change', saveMatch);
     $('#stock').addEventListener('click', function () {
       if (!busy && game && game.current === HUMAN && game.phase === Game.PHASE.DRAW) onDrawStock();
     });
@@ -473,7 +605,16 @@
       if (Object.keys(selected).length === 1) onDiscard();
     });
 
-    newRound();
+    // Resume a saved match if one exists (and the tester hasn't rigged an RNG).
+    var saved = window.__OKEY_RNG ? null : loadMatch();
+    if (saved && saved.scores && saved.roundNum) {
+      scores = saved.scores.slice();
+      roundNum = saved.roundNum;
+      if (saved.difficulty) $('#difficulty-select').value = saved.difficulty;
+      newRound('resume');
+    } else {
+      newRound('new');
+    }
   }
 
   window.addEventListener('DOMContentLoaded', init);

@@ -340,7 +340,8 @@ html, body {
   #setup { gap: 8px; }
   #setup select, #setup button { padding: 6px 9px; font-size: 13px; }
 
-  /* Opponents across the top, center in the middle, you at the bottom. */
+  /* Opponents across the top; the rest of the table is a big melds panel.
+     The redundant "You" card is dropped so laid-down melds get real room. */
   #table {
     min-height: 0;
     overflow: hidden;
@@ -349,12 +350,12 @@ html, body {
     padding: 6px;
     gap: 4px;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
     grid-template-areas:
       "left  top    right"
-      "center center center"
-      "bottom bottom bottom";
+      "center center center";
   }
+  .seat-bottom { display: none; }           /* your hand is right below — no need for a You card */
   .mini-hand { display: none; }             /* face-down stacks cost too much height */
   .player-card { min-width: 0; padding: 4px 6px; }
   .avatar { width: 34px; height: 34px; }
@@ -364,12 +365,30 @@ html, body {
   .discard-pile { min-width: 38px; min-height: 50px; }
   .seat { gap: 3px; }
 
-  #center { gap: 6px; }
-  .stock { width: 52px; height: 70px; }
-  #melds-area { max-height: none; overflow-y: auto; gap: 5px; padding: 2px; }
+  /* Center = the shared melds table. Stock sits compactly on top. */
+  #center {
+    gap: 6px;
+    width: 100%;
+    height: 100%;
+    justify-content: flex-start;
+  }
+  .stock { width: 46px; height: 60px; flex: 0 0 auto; }
+  #melds-area {
+    flex: 1 1 auto;
+    width: 100%;
+    max-height: none;
+    overflow-y: auto;
+    align-content: flex-start;
+    gap: 6px;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.16);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .melds-hint { align-self: center; margin: auto; }
   .table-meld { padding: 3px; }
 
-  .tile.small { width: 26px; height: 36px; font-size: 14px; }
+  .tile.small { width: 28px; height: 39px; font-size: 15px; }
   .tile.mini { width: 26px; height: 36px; font-size: 14px; }
 
   /* Your hand: always visible, wraps to as many rows as needed but capped. */

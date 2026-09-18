@@ -14,29 +14,60 @@
   var AI_DELAY = window.__OKEY_FAST ? 0 : 750; // test hook for headless runs
 
   // ---- Famous-figure opponents & portrait avatars -------------------------
-  // Each opponent is a well-known historical figure with a hand-tuned flat
-  // portrait drawn as inline SVG (works fully offline). Three are picked at
-  // random per match; seat 0 is always "You".
+  // Each opponent is a well-known historical figure with a hand-tuned,
+  // shaded inline-SVG portrait (works fully offline — no image files, no
+  // network). Three are picked at random per match; seat 0 is always "You".
+  //
+  // Config fields: bg/bgEdge (radial ground), skin/skin2 (base/shadow),
+  // cloth + collar, eye (iris), hair {style,color,hi}, plus optional
+  // brow, mustache, beard, goatee, glasses, hat, headdress, flower, unibrow,
+  // cravat, ruff.
   var YOU_FIGURE = {
-    name: 'You',
-    bg: '#3d5a45', skin: '#e8b98f', hair: 'short', hairColor: '#5a3a22', smile: true
+    name: 'You', bg: '#3d5a45', bgEdge: '#20321f', skin: '#e8b98f', skin2: '#c9925f',
+    cloth: '#2f4a3a', collar: 'suit', eye: '#5a4a3a',
+    hair: { style: 'short', color: '#5a3a22', hi: '#7a5233' }, smile: true
   };
   var FIGURE_POOL = [
-    { name: 'Einstein',    bg: '#37475a', skin: '#e8bd94', hair: 'wild',  hairColor: '#e9e9e9', mustache: '#dcdcdc' },
-    { name: 'Beethoven',   bg: '#5a3535', skin: '#e6b98f', hair: 'wild',  hairColor: '#6b4a2a', brow: true },
-    { name: 'Mozart',      bg: '#5f4a78', skin: '#f0d3b3', hair: 'wig',   hairColor: '#f2f2f2' },
-    { name: 'Tesla',       bg: '#2c3e50', skin: '#e6b98f', hair: 'slick', hairColor: '#241f1c', mustache: '#241f1c' },
-    { name: 'Cleopatra',   bg: '#7a6420', skin: '#cf9b6a', hair: 'long',  hairColor: '#181818', headband: '#d4af37' },
-    { name: 'Frida',       bg: '#3a5a3a', skin: '#cf9b6a', hair: 'bun',   hairColor: '#181818', brow: true, flower: '#e5568f' },
-    { name: 'Napoleon',    bg: '#33366a', skin: '#e6b98f', hair: 'short', hairColor: '#2a2a2a', hat: 'bicorne' },
-    { name: 'Atatürk',     bg: '#455a6a', skin: '#f0d3b3', hair: 'short', hairColor: '#d9c07a', brow: true },
-    { name: 'Curie',       bg: '#444a52', skin: '#e6b98f', hair: 'bun',   hairColor: '#3a2a1a' },
-    { name: 'Shakespeare', bg: '#574a38', skin: '#e6b98f', hair: 'short', hairColor: '#7a5a38', goatee: '#7a5a38', bald: true },
-    { name: 'Gandhi',      bg: '#5a4a2a', skin: '#b98a5a', hair: 'bald',  hairColor: '#333', glasses: true },
-    { name: 'Da Vinci',    bg: '#4a4030', skin: '#e6b98f', hair: 'long',  hairColor: '#8a7a5a', beard: '#8a7a5a' }
+    { name: 'Einstein', bg: '#3a5064', bgEdge: '#1c2b38', skin: '#e9c6a1', skin2: '#c99b70',
+      cloth: '#3a3f4a', collar: 'suit', eye: '#5a4636',
+      hair: { style: 'wild', color: '#e6e6e6', hi: '#ffffff' }, mustache: '#d8d8d8', brow: '#d0d0d0' },
+    { name: 'Beethoven', bg: '#6a3838', bgEdge: '#331b1b', skin: '#e6b98f', skin2: '#bf8c58',
+      cloth: '#242430', collar: 'cravat', eye: '#3a2a1a',
+      hair: { style: 'wild', color: '#4a3320', hi: '#6b4a2a' }, brow: '#3a2618', intense: true },
+    { name: 'Mozart', bg: '#5f4a86', bgEdge: '#2f2348', skin: '#f2d5b5', skin2: '#d3ac86',
+      cloth: '#7a1f2a', collar: 'coat', eye: '#4a5a6a',
+      hair: { style: 'wig', color: '#f0f0f0', hi: '#ffffff' }, brow: '#c3b199' },
+    { name: 'Tesla', bg: '#2c3e50', bgEdge: '#131f29', skin: '#e6b98f', skin2: '#bf8c58',
+      cloth: '#23262e', collar: 'suit', eye: '#33402f',
+      hair: { style: 'slick', color: '#241f1c', hi: '#3c332e' }, mustache: '#241f1c', brow: '#241f1c' },
+    { name: 'Cleopatra', bg: '#7a6420', bgEdge: '#3a2f0e', skin: '#cf9b6a', skin2: '#a87a4e',
+      cloth: '#151515', collar: 'dress', eye: '#2a2018',
+      hair: { style: 'egyptian', color: '#181818', hi: '#33312e' }, headdress: '#d4af37', kohl: true },
+    { name: 'Frida', bg: '#3a5a3a', bgEdge: '#1c301c', skin: '#cf9b6a', skin2: '#a87a4e',
+      cloth: '#b0344a', collar: 'dress', eye: '#2a1a10',
+      hair: { style: 'bun', color: '#1a1a1a', hi: '#3a3330' }, unibrow: '#1a1a1a', flower: true },
+    { name: 'Napoleon', bg: '#33366a', bgEdge: '#181a3a', skin: '#e6b98f', skin2: '#bf8c58',
+      cloth: '#1a2340', collar: 'uniform', eye: '#33445a',
+      hair: { style: 'short', color: '#241f1c', hi: '#3a2f28' }, hat: 'bicorne', brow: '#241f1c' },
+    { name: 'Atatürk', bg: '#45607a', bgEdge: '#22323f', skin: '#f0d3b3', skin2: '#d0a578',
+      cloth: '#2a2f3a', collar: 'suit', eye: '#6f93ab',
+      hair: { style: 'slick', color: '#c8b06a', hi: '#e2cf8c' }, brow: '#9a8248', intense: true },
+    { name: 'Curie', bg: '#444a52', bgEdge: '#212528', skin: '#e6b98f', skin2: '#bf8c58',
+      cloth: '#2a2a2a', collar: 'dress', eye: '#4a3a2a',
+      hair: { style: 'updo', color: '#3a2a1a', hi: '#5a4530' } },
+    { name: 'Shakespeare', bg: '#574a38', bgEdge: '#2b2418', skin: '#e6b98f', skin2: '#bf8c58',
+      cloth: '#161616', collar: 'ruff', eye: '#4a3a2a',
+      hair: { style: 'balding', color: '#7a5a38', hi: '#95744c' }, goatee: '#7a5a38' },
+    { name: 'Gandhi', bg: '#5a4a2a', bgEdge: '#2c2414', skin: '#b98a5a', skin2: '#96693c',
+      cloth: '#efe9dd', collar: 'robe', eye: '#2a1a10',
+      hair: { style: 'bald', color: '#4a4a4a', hi: '#5a5a5a' }, glasses: true, mustache: '#555555' },
+    { name: 'Da Vinci', bg: '#4a4030', bgEdge: '#241f16', skin: '#e6b98f', skin2: '#bf8c58',
+      cloth: '#3a2f20', collar: 'robe', eye: '#4a3a2a',
+      hair: { style: 'long', color: '#8a7a5a', hi: '#a89877' }, beard: '#8a7a5a', cap: '#33291c' }
   ];
 
   var figures = [YOU_FIGURE, FIGURE_POOL[0], FIGURE_POOL[1], FIGURE_POOL[2]];
+  var avatarUid = 0;
 
   function assignFigures() {
     var pool = FIGURE_POOL.slice();
@@ -49,75 +80,198 @@
 
   function nameOf(seat) { return (figures[seat] && figures[seat].name) || ('Player ' + seat); }
 
-  // Build a compact flat-portrait SVG from a figure config.
+  // Build a shaded illustrated portrait (100x100 viewBox) for a figure.
   function avatarSVG(f) {
+    var u = 'av' + (avatarUid++);
+    var hair = f.hair || { style: 'short', color: '#4a3a2a', hi: '#5a4530' };
+    var browCol = f.brow || hair.color;
     var p = [];
-    p.push('<svg viewBox="0 0 48 48" preserveAspectRatio="xMidYMid slice" aria-hidden="true">');
-    p.push('<rect width="48" height="48" fill="' + f.bg + '"/>');
-    // shoulders / clothing
-    p.push('<path d="M6 48 C7 39 15 35 24 35 C33 35 41 39 42 48 Z" fill="rgba(0,0,0,0.28)"/>');
-    // neck
-    p.push('<rect x="21" y="30" width="6" height="7" rx="2" fill="' + f.skin + '"/>');
-    // ears
-    p.push('<circle cx="14" cy="22" r="2.4" fill="' + f.skin + '"/><circle cx="34" cy="22" r="2.4" fill="' + f.skin + '"/>');
-    // head
-    p.push('<ellipse cx="24" cy="21" rx="10.5" ry="11.5" fill="' + f.skin + '"/>');
-    // hair (behind/around) depending on style
-    if (f.hair === 'long') {
-      p.push('<path d="M12 16 C12 8 36 8 36 16 L36 33 C34 27 33 24 33 20 C33 14 15 14 15 20 C15 24 14 27 12 33 Z" fill="' + f.hairColor + '"/>');
+    p.push('<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">');
+    p.push('<defs>');
+    p.push('<radialGradient id="' + u + 'bg" cx="50%" cy="38%" r="72%">' +
+           '<stop offset="0%" stop-color="' + f.bg + '"/><stop offset="100%" stop-color="' + (f.bgEdge || f.bg) + '"/></radialGradient>');
+    p.push('<linearGradient id="' + u + 'skin" x1="0" y1="0" x2="0" y2="1">' +
+           '<stop offset="0%" stop-color="' + f.skin + '"/><stop offset="100%" stop-color="' + (f.skin2 || f.skin) + '"/></linearGradient>');
+    p.push('</defs>');
+    p.push('<rect width="100" height="100" fill="url(#' + u + 'bg)"/>');
+
+    // --- back hair (behind the head) for long/wig/egyptian styles
+    if (hair.style === 'long' || hair.style === 'egyptian')
+      p.push('<path d="M22 40 C20 18 80 18 78 40 L79 74 C74 60 72 52 72 44 C72 30 28 30 28 44 C28 52 26 60 21 74 Z" fill="' + hair.color + '"/>');
+    if (hair.style === 'wig')
+      p.push('<path d="M22 52 C12 52 15 26 26 24 C26 12 74 12 74 24 C85 26 88 52 78 52 C80 40 74 32 68 30 C68 22 32 22 32 30 C26 32 20 40 22 52 Z" fill="' + hair.color + '"/>');
+
+    // --- shoulders / clothing + collar
+    p.push('<path d="M8 100 C10 80 28 72 50 72 C72 72 90 80 92 100 Z" fill="' + (f.cloth || '#333') + '"/>');
+    p.push('<path d="M8 100 C10 80 28 72 50 72 C72 72 90 80 92 100 Z" fill="rgba(0,0,0,0.18)" opacity="0.5"/>');
+    drawCollar(p, f);
+
+    // --- neck (with shadow under jaw)
+    p.push('<path d="M42 62 h16 v10 c0 5 -16 5 -16 0 Z" fill="' + (f.skin2 || f.skin) + '"/>');
+    p.push('<ellipse cx="50" cy="63" rx="10" ry="4" fill="rgba(0,0,0,0.12)"/>');
+
+    // --- ears
+    p.push('<circle cx="28" cy="46" r="5" fill="url(#' + u + 'skin)"/><circle cx="72" cy="46" r="5" fill="url(#' + u + 'skin)"/>');
+
+    // --- head
+    p.push('<path d="M28 42 C28 24 72 24 72 42 C72 60 63 68 50 68 C37 68 28 60 28 42 Z" fill="url(#' + u + 'skin)"/>');
+    // side shading + cheeks
+    p.push('<path d="M30 42 C30 28 36 24 36 24 C31 32 31 50 40 62 C34 60 30 52 30 42 Z" fill="rgba(0,0,0,0.10)"/>');
+    p.push('<ellipse cx="38" cy="50" rx="4" ry="3" fill="rgba(210,120,90,0.16)"/><ellipse cx="62" cy="50" rx="4" ry="3" fill="rgba(210,120,90,0.16)"/>');
+
+    // --- nose
+    p.push('<path d="M50 42 C49 48 47 51 45 53 C47 55 53 55 55 53 C53 51 51 48 50 42 Z" fill="rgba(0,0,0,0.10)"/>');
+
+    // --- eyes
+    drawEye(p, 40, 44, f.eye, f.kohl);
+    drawEye(p, 60, 44, f.eye, f.kohl);
+    // --- brows
+    if (f.unibrow) {
+      p.push('<path d="M33 39 C42 35 58 35 67 39 C58 37 42 37 33 39 Z" fill="' + f.unibrow + '"/>');
+    } else {
+      var by = f.intense ? 39.5 : 38.5;
+      p.push('<path d="M33 ' + by + ' C37 ' + (by - 2) + ' 45 ' + (by - 2) + ' 47 ' + by + ' C44 ' + (by - 0.5) + ' 37 ' + (by - 0.5) + ' 33 ' + (by + 1) + ' Z" fill="' + browCol + '"/>');
+      p.push('<path d="M67 ' + by + ' C63 ' + (by - 2) + ' 55 ' + (by - 2) + ' 53 ' + by + ' C56 ' + (by - 0.5) + ' 63 ' + (by - 0.5) + ' 67 ' + (by + 1) + ' Z" fill="' + browCol + '"/>');
     }
-    if (f.hair === 'wig') {
-      p.push('<path d="M12 22 C8 22 9 13 13 12 C13 6 35 6 35 12 C39 13 40 22 36 22 C37 17 35 14 33 13 C33 10 15 10 15 13 C13 14 11 17 12 22 Z" fill="' + f.hairColor + '"/>');
-      p.push('<circle cx="12" cy="24" r="3.2" fill="' + f.hairColor + '"/><circle cx="36" cy="24" r="3.2" fill="' + f.hairColor + '"/>');
+
+    // --- mouth / lips
+    if (f.smile) p.push('<path d="M42 58 Q50 64 58 58 Q50 60 42 58 Z" fill="#a85a48"/>');
+    else p.push('<path d="M43 58 Q50 61 57 58" fill="none" stroke="#8a4a3a" stroke-width="2" stroke-linecap="round"/>');
+
+    // --- facial hair
+    if (f.beard) {
+      p.push('<path d="M30 48 C30 70 44 80 50 80 C56 80 70 70 70 48 C66 62 60 66 50 66 C40 66 34 62 30 48 Z" fill="' + f.beard + '"/>');
+      p.push('<path d="M42 60 Q50 64 58 60 L58 62 Q50 66 42 62 Z" fill="rgba(0,0,0,0.15)"/>');
     }
-    if (f.hair === 'wild') {
-      p.push('<g fill="' + f.hairColor + '">');
-      p.push('<circle cx="14" cy="13" r="5"/><circle cx="10" cy="18" r="4.2"/><circle cx="24" cy="9" r="5.5"/>');
-      p.push('<circle cx="34" cy="13" r="5"/><circle cx="38" cy="18" r="4.2"/><circle cx="18" cy="10" r="4.5"/><circle cx="30" cy="10" r="4.5"/>');
-      p.push('</g>');
+    if (f.goatee) {
+      p.push('<path d="M44 62 Q50 72 56 62 Q50 66 44 62 Z" fill="' + f.goatee + '"/>');
+      p.push('<rect x="47" y="55" width="6" height="8" rx="2" fill="' + f.goatee + '"/>');
     }
-    if (f.hair === 'short' && !f.bald) {
-      p.push('<path d="M13 20 C13 9 35 9 35 20 C33 15 31 13 24 13 C17 13 15 15 13 20 Z" fill="' + f.hairColor + '"/>');
+    if (f.mustache) p.push('<path d="M38 55 Q50 51 62 55 Q56 60 50 58 Q44 60 38 55 Z" fill="' + f.mustache + '"/>');
+
+    // --- front hair
+    drawFrontHair(p, hair);
+
+    // --- accessories
+    if (f.headdress) {
+      p.push('<rect x="26" y="24" width="48" height="7" rx="2" fill="' + f.headdress + '"/>');
+      p.push('<path d="M50 31 l4 6 -4 3 -4 -3 Z" fill="' + f.headdress + '"/>');
+      p.push('<rect x="26" y="24" width="48" height="2.4" fill="rgba(255,255,255,0.35)"/>');
     }
-    if (f.hair === 'slick') {
-      p.push('<path d="M13 19 C13 10 35 10 35 19 C33 14 31 12 24 12 C17 12 15 14 13 19 Z" fill="' + f.hairColor + '"/>');
-      p.push('<rect x="23.4" y="11" width="1.2" height="6" fill="' + f.bg + '" opacity="0.5"/>'); // center part
-    }
-    if (f.hair === 'bun') {
-      p.push('<path d="M13 20 C13 9 35 9 35 20 C33 14 31 12 24 12 C17 12 15 14 13 20 Z" fill="' + f.hairColor + '"/>');
-      p.push('<circle cx="24" cy="7" r="4" fill="' + f.hairColor + '"/>');
-    }
-    if (f.hair === 'bald') {
-      p.push('<path d="M14 21 C15 17 17 16 18 16 C16 19 16 21 16 21 Z M34 21 C33 17 31 16 30 16 C32 19 32 21 32 21 Z" fill="' + (f.hairColor || '#333') + '"/>');
-    }
-    if (f.headband) {
-      p.push('<rect x="13" y="12" width="22" height="3.4" rx="1.5" fill="' + f.headband + '"/>');
-      p.push('<circle cx="24" cy="13.7" r="1.6" fill="' + f.headband + '" stroke="#a5842a" stroke-width="0.5"/>');
+    if (f.flower) {
+      drawFlower(p, 70, 28, '#e5568f');
+      drawFlower(p, 32, 26, '#f2b134');
     }
     if (f.hat === 'bicorne') {
-      p.push('<path d="M8 15 C14 7 34 7 40 15 C34 12 14 12 8 15 Z" fill="#20233a"/>');
-      p.push('<rect x="22" y="9" width="4" height="4" fill="#c9a227"/>');
+      p.push('<path d="M16 34 C28 14 72 14 84 34 C70 28 30 28 16 34 Z" fill="#1c2038"/>');
+      p.push('<path d="M16 34 C30 30 70 30 84 34 C70 36 30 36 16 34 Z" fill="#11142a"/>');
+      p.push('<rect x="46" y="22" width="8" height="9" rx="1" fill="#c9a227"/>');
     }
-    if (f.flower) p.push('<circle cx="32" cy="12" r="3" fill="' + f.flower + '"/><circle cx="32" cy="12" r="1.2" fill="#ffd257"/>');
-    // brows
-    if (f.brow) p.push('<rect x="17" y="19" width="6" height="1.6" rx="0.8" fill="#3a2a1a"/><rect x="25" y="19" width="6" height="1.6" rx="0.8" fill="#3a2a1a"/>');
-    // eyes
-    p.push('<circle cx="20" cy="22" r="1.5" fill="#2a2320"/><circle cx="28" cy="22" r="1.5" fill="#2a2320"/>');
-    // glasses
+    if (f.cap) p.push('<path d="M28 40 C28 26 72 26 72 40 C64 32 36 32 28 40 Z" fill="' + f.cap + '"/>');
     if (f.glasses) {
-      p.push('<g fill="none" stroke="#333" stroke-width="1"><circle cx="20" cy="22" r="3"/><circle cx="28" cy="22" r="3"/><line x1="23" y1="22" x2="25" y2="22"/></g>');
+      p.push('<g fill="none" stroke="#2a2a2a" stroke-width="1.6">' +
+             '<circle cx="40" cy="44" r="7"/><circle cx="60" cy="44" r="7"/>' +
+             '<line x1="47" y1="44" x2="53" y2="44"/><line x1="33" y1="43" x2="28" y2="43"/><line x1="67" y1="43" x2="72" y2="43"/></g>');
     }
-    // mouth / smile
-    if (f.smile) p.push('<path d="M20 27 Q24 30 28 27" fill="none" stroke="#8a4a3a" stroke-width="1.4" stroke-linecap="round"/>');
-    else p.push('<path d="M21 27.5 L27 27.5" stroke="#8a4a3a" stroke-width="1.3" stroke-linecap="round"/>');
-    // mustache
-    if (f.mustache) p.push('<path d="M18 26.5 Q24 25 30 26.5 Q24 29 18 26.5 Z" fill="' + f.mustache + '"/>');
-    // beard
-    if (f.beard) p.push('<path d="M15 25 C15 34 33 34 33 25 C33 33 28 36 24 36 C20 36 15 33 15 25 Z" fill="' + f.beard + '" opacity="0.92"/>');
-    // goatee
-    if (f.goatee) p.push('<path d="M21 29 Q24 34 27 29 Q24 31 21 29 Z" fill="' + f.goatee + '"/><rect x="23" y="26" width="2" height="4" fill="' + f.goatee + '"/>');
     p.push('</svg>');
     return p.join('');
+  }
+
+  if (window.__OKEY_FAST) window.__okeyAvatars = { build: avatarSVG, pool: [YOU_FIGURE].concat(FIGURE_POOL) };
+
+  function drawEye(p, cx, cy, iris, kohl) {
+    iris = iris || '#3a2a1a';
+    p.push('<ellipse cx="' + cx + '" cy="' + cy + '" rx="5" ry="3.2" fill="#fbf7f0"/>');
+    p.push('<circle cx="' + cx + '" cy="' + cy + '" r="2.6" fill="' + iris + '"/>');
+    p.push('<circle cx="' + cx + '" cy="' + cy + '" r="1.2" fill="#181410"/>');
+    p.push('<circle cx="' + (cx - 0.9) + '" cy="' + (cy - 1) + '" r="0.7" fill="#ffffff"/>');
+    p.push('<path d="M' + (cx - 5) + ' ' + (cy - 0.5) + ' Q' + cx + ' ' + (cy - 4) + ' ' + (cx + 5) + ' ' + (cy - 0.5) + '" fill="none" stroke="rgba(0,0,0,0.55)" stroke-width="' + (kohl ? 2 : 1) + '"/>');
+    if (kohl) p.push('<line x1="' + (cx + 5) + '" y1="' + (cy - 0.5) + '" x2="' + (cx + 8) + '" y2="' + (cy - 2) + '" stroke="rgba(0,0,0,0.6)" stroke-width="1.4" stroke-linecap="round"/>');
+  }
+
+  function drawCollar(p, f) {
+    switch (f.collar) {
+      case 'suit':
+        p.push('<path d="M42 72 L50 86 L58 72 L64 76 L58 100 L42 100 L36 76 Z" fill="rgba(255,255,255,0.10)"/>');
+        p.push('<path d="M46 74 L50 100 L54 74 Z" fill="rgba(255,255,255,0.6)"/>'); // shirt/tie strip
+        break;
+      case 'uniform':
+        p.push('<path d="M38 74 L50 88 L62 74 L66 78 L60 100 L40 100 L34 78 Z" fill="#0f1630"/>');
+        p.push('<circle cx="44" cy="84" r="1.6" fill="#e3c05a"/><circle cx="44" cy="90" r="1.6" fill="#e3c05a"/>');
+        p.push('<circle cx="56" cy="84" r="1.6" fill="#e3c05a"/><circle cx="56" cy="90" r="1.6" fill="#e3c05a"/>');
+        break;
+      case 'cravat':
+        p.push('<path d="M42 72 L50 92 L58 72 Z" fill="#f3efe6"/>');
+        break;
+      case 'ruff':
+        p.push('<ellipse cx="50" cy="74" rx="22" ry="7" fill="#f3efe6"/>');
+        p.push('<ellipse cx="50" cy="74" rx="22" ry="7" fill="none" stroke="rgba(0,0,0,0.12)" stroke-width="1" stroke-dasharray="3 2"/>');
+        break;
+      case 'coat':
+        p.push('<path d="M40 74 L50 90 L60 74 L66 80 L58 100 L42 100 L34 80 Z" fill="#e6c766"/>');
+        p.push('<path d="M47 76 L50 100 L53 76 Z" fill="#f4efe0"/>');
+        break;
+      case 'robe':
+        p.push('<path d="M34 78 C42 74 58 74 66 78 L62 100 L38 100 Z" fill="rgba(0,0,0,0.12)"/>');
+        break;
+      case 'dress':
+        p.push('<path d="M40 76 C46 82 54 82 60 76 L60 100 L40 100 Z" fill="rgba(0,0,0,0.14)"/>');
+        break;
+    }
+  }
+
+  function drawFlower(p, cx, cy, col) {
+    for (var a = 0; a < 5; a++) {
+      var ang = a * (Math.PI * 2 / 5);
+      p.push('<circle cx="' + (cx + Math.cos(ang) * 3.4).toFixed(1) + '" cy="' + (cy + Math.sin(ang) * 3.4).toFixed(1) + '" r="2.4" fill="' + col + '"/>');
+    }
+    p.push('<circle cx="' + cx + '" cy="' + cy + '" r="2" fill="#ffd257"/>');
+  }
+
+  function drawFrontHair(p, hair) {
+    var c = hair.color, hi = hair.hi || hair.color;
+    switch (hair.style) {
+      case 'wild':
+        p.push('<g fill="' + c + '"><circle cx="30" cy="30" r="11"/><circle cx="20" cy="42" r="9"/><circle cx="50" cy="20" r="12"/>' +
+               '<circle cx="70" cy="30" r="11"/><circle cx="80" cy="42" r="9"/><circle cx="38" cy="22" r="10"/><circle cx="62" cy="22" r="10"/></g>');
+        p.push('<path d="M32 34 C36 26 64 26 68 34 C60 30 40 30 32 34 Z" fill="' + hi + '" opacity="0.5"/>');
+        break;
+      case 'wig':
+        p.push('<path d="M30 34 C30 22 70 22 70 34 C62 28 38 28 30 34 Z" fill="' + c + '"/>');
+        p.push('<circle cx="26" cy="50" r="7" fill="' + c + '"/><circle cx="74" cy="50" r="7" fill="' + c + '"/>');
+        p.push('<circle cx="26" cy="50" r="3" fill="' + hi + '" opacity="0.6"/><circle cx="74" cy="50" r="3" fill="' + hi + '" opacity="0.6"/>');
+        break;
+      case 'slick':
+        p.push('<path d="M29 40 C29 24 71 24 71 40 C64 30 58 27 50 27 C42 27 36 30 29 40 Z" fill="' + c + '"/>');
+        p.push('<path d="M50 27 C46 30 42 34 40 40 C46 32 50 30 50 30 Z" fill="' + hi + '" opacity="0.5"/>');
+        break;
+      case 'egyptian':
+        p.push('<path d="M28 38 C28 22 72 22 72 38 C64 30 36 30 28 38 Z" fill="' + c + '"/>');
+        p.push('<rect x="26" y="36" width="8" height="30" rx="3" fill="' + c + '"/><rect x="66" y="36" width="8" height="30" rx="3" fill="' + c + '"/>');
+        break;
+      case 'short':
+        p.push('<path d="M28 42 C28 24 72 24 72 42 C66 32 60 29 50 29 C40 29 34 32 28 42 Z" fill="' + c + '"/>');
+        p.push('<path d="M34 34 C40 29 60 29 66 34 C58 31 42 31 34 34 Z" fill="' + hi + '" opacity="0.45"/>');
+        break;
+      case 'updo':
+        p.push('<path d="M28 42 C28 24 72 24 72 42 C66 32 60 29 50 29 C40 29 34 32 28 42 Z" fill="' + c + '"/>');
+        p.push('<ellipse cx="50" cy="20" rx="10" ry="7" fill="' + c + '"/>');
+        p.push('<ellipse cx="50" cy="19" rx="5" ry="3" fill="' + hi + '" opacity="0.5"/>');
+        break;
+      case 'bun':
+        p.push('<path d="M28 42 C28 24 72 24 72 42 C66 32 60 29 50 29 C40 29 34 32 28 42 Z" fill="' + c + '"/>');
+        p.push('<circle cx="50" cy="18" r="8" fill="' + c + '"/>');
+        break;
+      case 'balding':
+        p.push('<path d="M30 42 C30 34 34 30 40 29 C34 33 33 40 33 46 C31 45 30 44 30 42 Z" fill="' + c + '"/>');
+        p.push('<path d="M70 42 C70 34 66 30 60 29 C66 33 67 40 67 46 C69 45 70 44 70 42 Z" fill="' + c + '"/>');
+        p.push('<path d="M30 46 C29 54 30 60 33 64 L36 50 Z" fill="' + c + '"/><path d="M70 46 C71 54 70 60 67 64 L64 50 Z" fill="' + c + '"/>');
+        break;
+      case 'long':
+        p.push('<path d="M28 40 C28 24 72 24 72 40 C64 31 36 31 28 40 Z" fill="' + c + '"/>');
+        break;
+      // 'bald' -> no front hair
+    }
   }
 
   var game = null;

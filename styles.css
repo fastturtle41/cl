@@ -117,7 +117,15 @@ html, body {
   border-color: var(--accent);
   box-shadow: 0 0 16px var(--accent);
 }
-.avatar { font-size: 24px; }
+.avatar {
+  width: 46px; height: 46px; margin: 0 auto 2px;
+  border-radius: 50%; overflow: hidden;
+  background: rgba(0,0,0,0.25);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
+  font-size: 24px; line-height: 46px;
+}
+.avatar svg { display: block; width: 100%; height: 100%; }
+.player-card.active-turn .avatar { box-shadow: inset 0 0 0 2px var(--accent); }
 .player-name { font-weight: bold; display: block; }
 .player-diff { font-size: 11px; opacity: 0.75; text-transform: capitalize; }
 .player-stats { font-size: 12px; margin-top: 2px; }
@@ -293,6 +301,16 @@ html, body {
 }
 
 @media (max-width: 1000px) {
-  #app { grid-template-columns: 1fr; grid-template-areas: "top" "table" "rack" "side"; }
-  #sidebar { max-height: 140px; }
+  html, body { height: auto; overflow: auto; }
+  #app {
+    height: auto;
+    min-height: 100%;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+    grid-template-areas: "top" "table" "rack" "side";
+  }
+  #topbar { flex-wrap: wrap; gap: 12px 18px; }
+  #table { min-height: 480px; overflow: visible; }
+  #melds-area { max-height: none; }
+  #sidebar { max-height: 180px; }
 }

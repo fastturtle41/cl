@@ -187,6 +187,9 @@
     var e = el('div', 'log-entry' + (cls ? ' ' + cls : ''), msg);
     box.appendChild(e);
     box.scrollTop = box.scrollHeight;
+    // Mirror the latest line into the always-visible status strip (mobile).
+    var status = $('#status');
+    if (status) status.textContent = msg;
   }
 
   // ---- New game -----------------------------------------------------------
@@ -371,7 +374,8 @@
       if (stagedIds[tile.id]) return; // hidden while staged
       var e = tileEl(tile);
       if (selected[tile.id]) e.classList.add('selected');
-      e.addEventListener('click', function () { onRackTileClick(tile.id); });
+      // Pointer handling gives us both a tap (select) and a drag (reorder).
+      e.addEventListener('pointerdown', function (ev) { onRackPointerDown(ev, tile.id, e); });
       rack.appendChild(e);
     });
   }
@@ -506,11 +510,82 @@
   }
 
   // ---- Human interactions -------------------------------------------------
-  function onRackTileClick(id) {
-    if (busy || game.current !== HUMAN) return;
+  // A quick tap selects/deselects a tile; a drag reorders it within the rack.
+  function toggleSelect(id) {
     if (selected[id]) delete selected[id];
     else selected[id] = true;
     render();
+  }
+
+  // Rack drag-to-reorder state.
+  var drag = { id: null, el: null, startX: 0, startY: 0, active: false };
+  var DRAG_THRESHOLD = 7; // px before a press becomes a drag
+
+  function onRackPointerDown(ev, id, elm) {
+    // Only left button / touch / pen.
+    if (ev.button != null && ev.button !== 0) return;
+    drag.id = id;
+    drag.el = elm;
+    drag.startX = ev.clientX;
+    drag.startY = ev.clientY;
+    drag.active = false;
+    // You can rearrange your hand any time (even while opponents move), just
+    // not after the round has ended.
+    drag.canDrag = !!game && !game.roundOver;
+  }
+
+  function onRackPointerMove(ev) {
+    if (drag.id == null) return;
+    var dx = ev.clientX - drag.startX;
+    var dy = ev.clientY - drag.startY;
+    if (!drag.active) {
+      if (!drag.canDrag) return;
+      if (Math.abs(dx) + Math.abs(dy) < DRAG_THRESHOLD) return;
+      drag.active = true;
+      drag.el.classList.add('dragging');
+    }
+    ev.preventDefault();
+    // Reposition within the rack based on the tile under the pointer.
+    var under = document.elementFromPoint(ev.clientX, ev.clientY);
+    var target = under && under.closest ? under.closest('#rack .tile') : null;
+    var rack = $('#rack');
+    if (target && target !== drag.el && target.parentNode === rack) {
+      var rect = target.getBoundingClientRect();
+      var before;
+      if (ev.clientY < rect.top) before = true;            // pointer on an earlier row
+      else if (ev.clientY > rect.bottom) before = false;   // pointer on a later row
+      else before = ev.clientX < rect.left + rect.width / 2; // same row: by x
+      rack.insertBefore(drag.el, before ? target : target.nextSibling);
+    }
+  }
+
+  function onRackPointerUp() {
+    if (drag.id == null) return;
+    var wasActive = drag.active;
+    var id = drag.id;
+    var elm = drag.el;
+    var inDom = elm && elm.parentNode && elm.parentNode.id === 'rack';
+    drag.id = null; drag.el = null; drag.active = false;
+    if (wasActive) {
+      if (elm) elm.classList.remove('dragging');
+      if (inDom) { syncHandFromRack(); render(); } // a re-render may have detached it
+    } else {
+      toggleSelect(id); // it was a tap
+    }
+  }
+
+  // Rewrite the human hand order to match the rack's current DOM order,
+  // keeping any staged (hidden) tiles at the end.
+  function syncHandFromRack() {
+    var rack = $('#rack');
+    var order = [].slice.call(rack.querySelectorAll('.tile'))
+      .map(function (e) { return e.dataset.tileId; });
+    var hand = game.hands[HUMAN];
+    var byId = {};
+    hand.forEach(function (t) { byId[t.id] = t; });
+    var visible = order.map(function (i) { return byId[i]; }).filter(Boolean);
+    var staged = hand.filter(function (t) { return stagedIds[t.id]; });
+    game.hands[HUMAN] = visible.concat(staged);
   }
 
   function selectedIds() { return Object.keys(selected); }
@@ -703,6 +778,11 @@
     $('#layoff-btn').addEventListener('click', onLayoffBtn);
     $('#discard-btn').addEventListener('click', onDiscard);
     $('#difficulty-select').addEventListener('change', saveMatch);
+    // Rack drag-to-reorder: track pointer at the document level so the drag
+    // continues even if the pointer leaves the tile.
+    document.addEventListener('pointermove', onRackPointerMove, { passive: false });
+    document.addEventListener('pointerup', onRackPointerUp);
+    document.addEventListener('pointercancel', onRackPointerUp);
     $('#stock').addEventListener('click', function () {
       if (!busy && game && game.current === HUMAN && game.phase === Game.PHASE.DRAW) onDrawStock();
     });

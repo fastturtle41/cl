@@ -251,13 +251,25 @@ html, body {
   box-shadow: inset 0 3px 10px rgba(0,0,0,0.45);
   align-content: flex-start;
 }
-#rack .tile { cursor: pointer; transition: transform 0.1s; }
+#rack .tile { cursor: grab; transition: transform 0.1s; touch-action: none; }
 #rack .tile:hover { transform: translateY(-4px); }
 #rack .tile.selected {
   transform: translateY(-10px);
   box-shadow: 0 0 0 3px var(--accent), 0 4px 8px rgba(0,0,0,0.5);
 }
 #rack .tile.hint { outline: 2px dashed var(--accent); }
+#rack .tile.dragging {
+  cursor: grabbing;
+  transform: translateY(-12px) scale(1.06);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+  opacity: 0.95;
+  z-index: 5;
+}
+
+.status {
+  font-size: 13px; color: var(--accent);
+  min-height: 18px; padding: 0 2px;
+}
 
 #controls { display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -300,17 +312,84 @@ html, body {
   border: 1px solid var(--accent);
 }
 
-@media (max-width: 1000px) {
-  html, body { height: auto; overflow: auto; }
+/* ------------------------------------------------------------------ *
+ * Compact, fit-to-screen layout for phones and iPad portrait.
+ * Everything lives inside one viewport height — no page scrolling.
+ * The center (stock + melds) flexes and scrolls internally if needed;
+ * the hand and controls are always visible.
+ * ------------------------------------------------------------------ */
+@media (max-width: 1024px) {
+  html, body { height: 100%; overflow: hidden; }
   #app {
-    height: auto;
-    min-height: 100%;
+    height: 100%;
+    gap: 4px;
+    padding: 4px;
     grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto;
-    grid-template-areas: "top" "table" "rack" "side";
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "top" "table" "rack";
   }
-  #topbar { flex-wrap: wrap; gap: 12px 18px; }
-  #table { min-height: 480px; overflow: visible; }
-  #melds-area { max-height: none; }
-  #sidebar { max-height: 180px; }
+  #sidebar { display: none; }               /* log hidden; #status shows turn info */
+
+  #topbar {
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding: 6px 12px;
+  }
+  #topbar h1 { font-size: 20px; letter-spacing: 1px; }
+  #okey-info { gap: 12px; }
+  #setup { gap: 8px; }
+  #setup select, #setup button { padding: 6px 9px; font-size: 13px; }
+
+  /* Opponents across the top, center in the middle, you at the bottom. */
+  #table {
+    min-height: 0;
+    overflow: hidden;
+    border-width: 6px;
+    border-radius: 16px;
+    padding: 6px;
+    gap: 4px;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "left  top    right"
+      "center center center"
+      "bottom bottom bottom";
+  }
+  .mini-hand { display: none; }             /* face-down stacks cost too much height */
+  .player-card { min-width: 0; padding: 4px 6px; }
+  .avatar { width: 34px; height: 34px; }
+  .player-name { font-size: 12px; }
+  .player-diff { font-size: 9px; }
+  .player-stats { font-size: 10px; }
+  .discard-pile { min-width: 38px; min-height: 50px; }
+  .seat { gap: 3px; }
+
+  #center { gap: 6px; }
+  .stock { width: 52px; height: 70px; }
+  #melds-area { max-height: none; overflow-y: auto; gap: 5px; padding: 2px; }
+  .table-meld { padding: 3px; }
+
+  .tile.small { width: 26px; height: 36px; font-size: 14px; }
+  .tile.mini { width: 26px; height: 36px; font-size: 14px; }
+
+  /* Your hand: always visible, wraps to as many rows as needed but capped. */
+  #rack-area { gap: 4px; }
+  #rack {
+    padding: 6px 8px;
+    gap: 4px;
+    max-height: 32vh;
+    overflow-y: auto;
+  }
+  #rack .tile { width: 34px; height: 48px; font-size: 19px; }
+  #controls { gap: 5px; }
+  #controls button { padding: 7px 9px; font-size: 12px; flex: 1 1 auto; min-width: 0; }
+  .status { font-size: 12px; min-height: 16px; }
+}
+
+/* Extra squeeze for small phones. */
+@media (max-width: 430px) {
+  #topbar h1 { display: none; }             /* reclaim the width for game info */
+  #rack .tile { width: 30px; height: 43px; font-size: 17px; }
+  #rack { max-height: 30vh; }
+  .tile.small, .tile.mini { width: 23px; height: 32px; font-size: 12px; }
 }

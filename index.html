@@ -2,14 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
   <title>Okey 101</title>
+
+  <!-- Installable web app (PWA) -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0f6b3e" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Okey 101" />
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="app">
     <header id="topbar">
-      <h1>Okey&nbsp;101</h1>
+      <div id="brand" role="img" aria-label="Okey 101">
+        <svg id="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <radialGradient id="brandBg" cx="50%" cy="38%" r="75%">
+              <stop offset="0%" stop-color="#15703f"/>
+              <stop offset="100%" stop-color="#083b22"/>
+            </radialGradient>
+            <linearGradient id="brandTile" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fbf7ec"/>
+              <stop offset="100%" stop-color="#eae2cd"/>
+            </linearGradient>
+          </defs>
+          <rect width="100" height="100" rx="20" fill="url(#brandBg)"/>
+          <g transform="translate(50 53) rotate(-6)">
+            <rect x="-23" y="-29" width="46" height="58" rx="7" fill="url(#brandTile)" stroke="#d8cfb8" stroke-width="1.5"/>
+            <text x="0" y="9" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="800" font-size="27" fill="#d22f2f">101</text>
+            <text x="0" y="-13" text-anchor="middle" font-size="13" fill="#c99700">★</text>
+          </g>
+        </svg>
+      </div>
       <div id="okey-info">
         <div class="info-block">
           <span class="info-label">Indicator</span>
@@ -23,6 +53,10 @@
           <span class="info-label">Stock</span>
           <span id="stock-count" class="info-value">–</span>
         </div>
+        <div class="info-block">
+          <span class="info-label">Round</span>
+          <span id="round-count" class="info-value">1</span>
+        </div>
       </div>
       <div id="setup">
         <label>Opponents:
@@ -34,6 +68,7 @@
             <option value="mixed">Mixed (E/M/H)</option>
           </select>
         </label>
+        <button id="install-btn" hidden>Install</button>
         <button id="new-game-btn">New Game</button>
       </div>
     </header>
@@ -120,17 +155,20 @@
       </div>
     </main>
 
+    <div id="staging-tray" hidden>
+      <span class="tray-label">Staged melds:</span>
+      <div id="staged-list"></div>
+      <span id="staged-total">Total: 0</span>
+    </div>
+
     <section id="rack-area">
-      <div id="staging-tray" hidden>
-        <span class="tray-label">Staged melds:</span>
-        <div id="staged-list"></div>
-        <span id="staged-total">Total: 0</span>
-      </div>
+      <div id="status" class="status"></div>
       <div id="rack"></div>
       <div id="controls">
         <button id="draw-stock-btn" disabled>Draw Stock</button>
         <button id="take-discard-btn" disabled>Take Discard</button>
         <button id="sort-btn">Sort</button>
+        <button id="hint-btn">Hint</button>
         <button id="group-btn" disabled>Group Selected ▸ Stage</button>
         <button id="commit-btn" disabled>Lay Melds</button>
         <button id="layoff-btn" disabled>Lay Off</button>
@@ -159,5 +197,15 @@
   <script src="js/game.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/ui.js"></script>
+
+  <!-- Register the service worker so the installed app works offline.
+       Harmless where it isn't available (e.g. file:// or a sandboxed host). -->
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      window.addEventListener('load', function () {
+        try { navigator.serviceWorker.register('sw.js').catch(function () {}); } catch (e) {}
+      });
+    }
+  </script>
 </body>
 </html>

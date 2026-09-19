@@ -17,6 +17,12 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
+html {
+  /* Prevent iOS Safari from auto-boosting font sizes in narrow columns,
+     which otherwise blows up carefully sized compact mobile layouts. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 html, body {
   margin: 0;
   height: 100%;
@@ -29,10 +35,11 @@ html, body {
 #app {
   display: grid;
   grid-template-columns: 1fr 250px;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto 1fr auto auto;
   grid-template-areas:
     "top    top"
     "table  side"
+    "stage  side"
     "rack   side";
   height: 100vh;
   gap: 8px;
@@ -49,12 +56,12 @@ html, body {
   border-radius: 12px;
   padding: 8px 18px;
 }
-#topbar h1 {
-  margin: 0;
-  font-size: 26px;
-  letter-spacing: 2px;
-  color: var(--accent);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+#brand { flex: 0 0 auto; line-height: 0; }
+#brand-mark {
+  width: 46px; height: 46px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  display: block;
 }
 #okey-info { display: flex; gap: 20px; align-items: center; }
 .info-block { display: flex; flex-direction: column; align-items: center; gap: 3px; }
@@ -117,7 +124,15 @@ html, body {
   border-color: var(--accent);
   box-shadow: 0 0 16px var(--accent);
 }
-.avatar { font-size: 24px; }
+.avatar {
+  width: 46px; height: 46px; margin: 0 auto 2px;
+  border-radius: 50%; overflow: hidden;
+  background: rgba(0,0,0,0.25);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.15);
+  font-size: 24px; line-height: 46px;
+}
+.avatar svg, .avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.player-card.active-turn .avatar { box-shadow: inset 0 0 0 2px var(--accent); }
 .player-name { font-weight: bold; display: block; }
 .player-diff { font-size: 11px; opacity: 0.75; text-transform: capitalize; }
 .player-stats { font-size: 12px; margin-top: 2px; }
@@ -226,7 +241,11 @@ html, body {
   min-height: 0;
 }
 #staging-tray {
-  background: var(--panel); border-radius: 10px; padding: 6px 12px;
+  grid-area: stage;
+  background: var(--panel);
+  border-radius: 0 0 10px 10px;
+  border-top: 2px solid var(--accent);
+  padding: 6px 12px;
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
 .tray-label { font-size: 12px; opacity: 0.8; }
@@ -243,13 +262,25 @@ html, body {
   box-shadow: inset 0 3px 10px rgba(0,0,0,0.45);
   align-content: flex-start;
 }
-#rack .tile { cursor: pointer; transition: transform 0.1s; }
+#rack .tile { cursor: grab; transition: transform 0.1s; touch-action: none; }
 #rack .tile:hover { transform: translateY(-4px); }
 #rack .tile.selected {
   transform: translateY(-10px);
   box-shadow: 0 0 0 3px var(--accent), 0 4px 8px rgba(0,0,0,0.5);
 }
 #rack .tile.hint { outline: 2px dashed var(--accent); }
+#rack .tile.dragging {
+  cursor: grabbing;
+  transform: translateY(-12px) scale(1.06);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+  opacity: 0.95;
+  z-index: 5;
+}
+
+.status {
+  font-size: 13px; color: var(--accent);
+  min-height: 18px; padding: 0 2px;
+}
 
 #controls { display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -292,7 +323,144 @@ html, body {
   border: 1px solid var(--accent);
 }
 
-@media (max-width: 1000px) {
-  #app { grid-template-columns: 1fr; grid-template-areas: "top" "table" "rack" "side"; }
-  #sidebar { max-height: 140px; }
+/* ------------------------------------------------------------------ *
+ * Compact, fit-to-screen layout for phones and iPad portrait.
+ * Everything lives inside one viewport height — no page scrolling.
+ * The center (stock + melds) flexes and scrolls internally if needed;
+ * the hand and controls are always visible.
+ * ------------------------------------------------------------------ */
+@media (max-width: 1024px) {
+  html, body { height: 100%; overflow: hidden; }
+  #app {
+    height: 100%;
+    gap: 4px;
+    padding: 4px;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "top" "table" "stage" "rack";
+  }
+  /* Only reserve room for the notch / home indicator when actually installed
+     and running standalone (no browser or host-app chrome of its own). In a
+     normal tab, or previewed inside a host app's own header, that chrome
+     already clears the notch — adding our own padding on top of it just
+     pushes everything down with a big empty gap. */
+  @media (display-mode: standalone) {
+    #app {
+      padding: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right))
+               max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+    }
+  }
+  #sidebar { display: none; }               /* log hidden; #status shows turn info */
+
+  /* Staging opens as a tab attached to the bottom of the Lay Tiles panel,
+     borrowing height from it (table's row is 1fr) — My Tiles and the
+     buttons below never move or get pushed off-screen. */
+  #staging-tray { max-height: 30vh; overflow-y: auto; padding: 5px 10px; gap: 8px; }
+  .tray-label { font-size: 11px; }
+  #staged-list { gap: 6px; }
+  .staged-meld { padding: 2px; gap: 1px; }
+  #staged-total { font-size: 12px; }
+
+  #topbar {
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    padding: 6px 12px;
+  }
+  #brand-mark { width: 34px; height: 34px; border-radius: 8px; }
+  #okey-info { gap: 12px; }
+  #setup { gap: 8px; }
+  #setup select, #setup button { padding: 6px 9px; font-size: 13px; }
+
+  /* Opponents across the top; the rest of the table is a big melds panel.
+     The redundant "You" card is dropped so laid-down melds get real room. */
+  #table {
+    min-height: 0;
+    overflow: hidden;
+    border-width: 6px;
+    border-radius: 16px;
+    padding: 6px;
+    gap: 4px;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "left  top    right"
+      "center center center";
+  }
+  .seat-bottom { display: none; }           /* your hand is right below — no need for a You card */
+  .mini-hand { display: none; }             /* face-down stacks cost too much height */
+  /* Keep the opponent+discard row compact and capped so "Lay Tiles" below it
+     stays the dominant area, matching the sketch's proportions — regardless
+     of device font metrics. */
+  .player-card { min-width: 0; padding: 2px 4px; line-height: 1.15; }
+  .avatar { width: 22px; height: 22px; margin: 0 auto 1px; line-height: 22px; font-size: 14px; }
+  .player-name { font-size: 10px; }
+  .player-diff { font-size: 8px; }
+  .player-stats { font-size: 8px; }
+  .opened-badge { font-size: 8px; padding: 1px 4px; top: -6px; right: -6px; }
+  .discard-pile { min-width: 26px; min-height: 34px; }
+  .seat { gap: 2px; }
+
+  /* Center = the shared melds ("Lay Tiles") panel, a slim Stock tab
+     attached to its left edge and vertically centered against it. The
+     tab fills its cell (never a fixed height) so it can't overflow and
+     get clipped when the row ends up shorter than expected. */
+  #center {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    align-items: stretch;
+    gap: 5px;
+    width: 100%;
+    height: 100%;
+  }
+  .stock {
+    align-self: center;
+    width: 26px;
+    height: 100%;
+    max-height: 100px;
+    border-radius: 10px 0 0 10px;
+  }
+  .stock-back { border-radius: 10px 0 0 10px; }
+  #stock-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+  }
+  #melds-area {
+    width: 100%;
+    height: 100%;
+    max-height: none;
+    overflow-y: auto;
+    align-content: flex-start;
+    gap: 6px;
+    padding: 6px;
+    background: rgba(0, 0, 0, 0.16);
+    border-radius: 0 10px 10px 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: none;
+  }
+  .melds-hint { align-self: center; margin: auto; }
+  .table-meld { padding: 3px; }
+
+  .tile.small { width: 28px; height: 39px; font-size: 15px; }
+  .tile.mini { width: 26px; height: 36px; font-size: 14px; }
+
+  /* Your hand: always visible, wraps to as many rows as needed but capped. */
+  #rack-area { gap: 4px; }
+  #rack {
+    padding: 6px 8px;
+    gap: 4px;
+    max-height: 32vh;
+    overflow-y: auto;
+  }
+  #rack .tile { width: 34px; height: 48px; font-size: 19px; }
+  #controls { gap: 5px; }
+  #controls button { padding: 7px 9px; font-size: 12px; flex: 1 1 auto; min-width: 0; }
+  .status { font-size: 12px; min-height: 16px; }
+}
+
+/* Extra squeeze for small phones. */
+@media (max-width: 430px) {
+  #rack .tile { width: 30px; height: 43px; font-size: 17px; }
+  #rack { max-height: 30vh; }
+  .tile.small, .tile.mini { width: 23px; height: 32px; font-size: 12px; }
 }

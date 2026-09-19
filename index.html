@@ -20,7 +20,26 @@
 <body>
   <div id="app">
     <header id="topbar">
-      <h1>Okey&nbsp;101</h1>
+      <div id="brand" role="img" aria-label="Okey 101">
+        <svg id="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <radialGradient id="brandBg" cx="50%" cy="38%" r="75%">
+              <stop offset="0%" stop-color="#15703f"/>
+              <stop offset="100%" stop-color="#083b22"/>
+            </radialGradient>
+            <linearGradient id="brandTile" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fbf7ec"/>
+              <stop offset="100%" stop-color="#eae2cd"/>
+            </linearGradient>
+          </defs>
+          <rect width="100" height="100" rx="20" fill="url(#brandBg)"/>
+          <g transform="translate(50 53) rotate(-6)">
+            <rect x="-23" y="-29" width="46" height="58" rx="7" fill="url(#brandTile)" stroke="#d8cfb8" stroke-width="1.5"/>
+            <text x="0" y="9" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="800" font-size="27" fill="#d22f2f">101</text>
+            <text x="0" y="-13" text-anchor="middle" font-size="13" fill="#c99700">★</text>
+          </g>
+        </svg>
+      </div>
       <div id="okey-info">
         <div class="info-block">
           <span class="info-label">Indicator</span>

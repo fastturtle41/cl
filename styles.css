@@ -56,12 +56,12 @@ html, body {
   border-radius: 12px;
   padding: 8px 18px;
 }
-#topbar h1 {
-  margin: 0;
-  font-size: 26px;
-  letter-spacing: 2px;
-  color: var(--accent);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+#brand { flex: 0 0 auto; line-height: 0; }
+#brand-mark {
+  width: 46px; height: 46px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  display: block;
 }
 #okey-info { display: flex; gap: 20px; align-items: center; }
 .info-block { display: flex; flex-direction: column; align-items: center; gap: 3px; }
@@ -334,12 +334,21 @@ html, body {
   #app {
     height: 100%;
     gap: 4px;
-    /* clear the notch / home indicator when installed as a standalone app */
-    padding: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right))
-             max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+    padding: 4px;
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr) auto auto;
     grid-template-areas: "top" "table" "stage" "rack";
+  }
+  /* Only reserve room for the notch / home indicator when actually installed
+     and running standalone (no browser or host-app chrome of its own). In a
+     normal tab, or previewed inside a host app's own header, that chrome
+     already clears the notch — adding our own padding on top of it just
+     pushes everything down with a big empty gap. */
+  @media (display-mode: standalone) {
+    #app {
+      padding: max(4px, env(safe-area-inset-top)) max(4px, env(safe-area-inset-right))
+               max(4px, env(safe-area-inset-bottom)) max(4px, env(safe-area-inset-left));
+    }
   }
   #sidebar { display: none; }               /* log hidden; #status shows turn info */
 
@@ -357,7 +366,7 @@ html, body {
     gap: 6px 14px;
     padding: 6px 12px;
   }
-  #topbar h1 { font-size: 20px; letter-spacing: 1px; }
+  #brand-mark { width: 34px; height: 34px; border-radius: 8px; }
   #okey-info { gap: 12px; }
   #setup { gap: 8px; }
   #setup select, #setup button { padding: 6px 9px; font-size: 13px; }
@@ -451,7 +460,6 @@ html, body {
 
 /* Extra squeeze for small phones. */
 @media (max-width: 430px) {
-  #topbar h1 { display: none; }             /* reclaim the width for game info */
   #rack .tile { width: 30px; height: 43px; font-size: 17px; }
   #rack { max-height: 30vh; }
   .tile.small, .tile.mini { width: 23px; height: 32px; font-size: 12px; }

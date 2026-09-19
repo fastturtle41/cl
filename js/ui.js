@@ -28,40 +28,40 @@
     hair: { style: 'short', color: '#5a3a22', hi: '#7a5233' }, smile: true
   };
   var FIGURE_POOL = [
-    { name: 'Einstein', bg: '#3a5064', bgEdge: '#1c2b38', skin: '#e9c6a1', skin2: '#c99b70',
+    { name: 'Einstein', photo: 'assets/portraits/einstein.jpg', bg: '#3a5064', bgEdge: '#1c2b38', skin: '#e9c6a1', skin2: '#c99b70',
       cloth: '#3a3f4a', collar: 'suit', eye: '#5a4636',
       hair: { style: 'wild', color: '#e6e6e6', hi: '#ffffff' }, mustache: '#d8d8d8', brow: '#d0d0d0' },
-    { name: 'Beethoven', bg: '#6a3838', bgEdge: '#331b1b', skin: '#e6b98f', skin2: '#bf8c58',
+    { name: 'Beethoven', photo: 'assets/portraits/beethoven.jpg', bg: '#6a3838', bgEdge: '#331b1b', skin: '#e6b98f', skin2: '#bf8c58',
       cloth: '#242430', collar: 'cravat', eye: '#3a2a1a',
       hair: { style: 'wild', color: '#4a3320', hi: '#6b4a2a' }, brow: '#3a2618', intense: true },
-    { name: 'Mozart', bg: '#5f4a86', bgEdge: '#2f2348', skin: '#f2d5b5', skin2: '#d3ac86',
+    { name: 'Mozart', photo: 'assets/portraits/mozart.jpg', bg: '#5f4a86', bgEdge: '#2f2348', skin: '#f2d5b5', skin2: '#d3ac86',
       cloth: '#7a1f2a', collar: 'coat', eye: '#4a5a6a',
       hair: { style: 'wig', color: '#f0f0f0', hi: '#ffffff' }, brow: '#c3b199' },
-    { name: 'Tesla', bg: '#2c3e50', bgEdge: '#131f29', skin: '#e6b98f', skin2: '#bf8c58',
+    { name: 'Tesla', photo: 'assets/portraits/tesla.jpg', bg: '#2c3e50', bgEdge: '#131f29', skin: '#e6b98f', skin2: '#bf8c58',
       cloth: '#23262e', collar: 'suit', eye: '#33402f',
       hair: { style: 'slick', color: '#241f1c', hi: '#3c332e' }, mustache: '#241f1c', brow: '#241f1c' },
-    { name: 'Cleopatra', bg: '#7a6420', bgEdge: '#3a2f0e', skin: '#cf9b6a', skin2: '#a87a4e',
+    { name: 'Cleopatra', photo: 'assets/portraits/cleopatra.jpg', bg: '#7a6420', bgEdge: '#3a2f0e', skin: '#cf9b6a', skin2: '#a87a4e',
       cloth: '#151515', collar: 'dress', eye: '#2a2018',
       hair: { style: 'egyptian', color: '#181818', hi: '#33312e' }, headdress: '#d4af37', kohl: true },
-    { name: 'Frida', bg: '#3a5a3a', bgEdge: '#1c301c', skin: '#cf9b6a', skin2: '#a87a4e',
+    { name: 'Frida', photo: 'assets/portraits/frida.jpg', bg: '#3a5a3a', bgEdge: '#1c301c', skin: '#cf9b6a', skin2: '#a87a4e',
       cloth: '#b0344a', collar: 'dress', eye: '#2a1a10',
       hair: { style: 'bun', color: '#1a1a1a', hi: '#3a3330' }, unibrow: '#1a1a1a', flower: true },
-    { name: 'Napoleon', bg: '#33366a', bgEdge: '#181a3a', skin: '#e6b98f', skin2: '#bf8c58',
+    { name: 'Napoleon', photo: 'assets/portraits/napoleon.jpg', bg: '#33366a', bgEdge: '#181a3a', skin: '#e6b98f', skin2: '#bf8c58',
       cloth: '#1a2340', collar: 'uniform', eye: '#33445a',
       hair: { style: 'short', color: '#241f1c', hi: '#3a2f28' }, hat: 'bicorne', brow: '#241f1c' },
-    { name: 'Atatürk', bg: '#45607a', bgEdge: '#22323f', skin: '#f0d3b3', skin2: '#d0a578',
+    { name: 'Atatürk', photo: 'assets/portraits/ataturk.jpg', bg: '#45607a', bgEdge: '#22323f', skin: '#f0d3b3', skin2: '#d0a578',
       cloth: '#2a2f3a', collar: 'suit', eye: '#6f93ab',
       hair: { style: 'slick', color: '#c8b06a', hi: '#e2cf8c' }, brow: '#9a8248', intense: true },
     { name: 'Curie', bg: '#444a52', bgEdge: '#212528', skin: '#e6b98f', skin2: '#bf8c58',
       cloth: '#2a2a2a', collar: 'dress', eye: '#4a3a2a',
       hair: { style: 'updo', color: '#3a2a1a', hi: '#5a4530' } },
-    { name: 'Shakespeare', bg: '#574a38', bgEdge: '#2b2418', skin: '#e6b98f', skin2: '#bf8c58',
+    { name: 'Shakespeare', photo: 'assets/portraits/shakespeare.jpg', bg: '#574a38', bgEdge: '#2b2418', skin: '#e6b98f', skin2: '#bf8c58',
       cloth: '#161616', collar: 'ruff', eye: '#4a3a2a',
       hair: { style: 'balding', color: '#7a5a38', hi: '#95744c' }, goatee: '#7a5a38' },
-    { name: 'Gandhi', bg: '#5a4a2a', bgEdge: '#2c2414', skin: '#b98a5a', skin2: '#96693c',
+    { name: 'Gandhi', photo: 'assets/portraits/gandhi.jpg', bg: '#5a4a2a', bgEdge: '#2c2414', skin: '#b98a5a', skin2: '#96693c',
       cloth: '#efe9dd', collar: 'robe', eye: '#2a1a10',
       hair: { style: 'bald', color: '#4a4a4a', hi: '#5a5a5a' }, glasses: true, mustache: '#555555' },
-    { name: 'Da Vinci', bg: '#4a4030', bgEdge: '#241f16', skin: '#e6b98f', skin2: '#bf8c58',
+    { name: 'Da Vinci', photo: 'assets/portraits/davinci.jpg', bg: '#4a4030', bgEdge: '#241f16', skin: '#e6b98f', skin2: '#bf8c58',
       cloth: '#3a2f20', collar: 'robe', eye: '#4a3a2a',
       hair: { style: 'long', color: '#8a7a5a', hi: '#a89877' }, beard: '#8a7a5a', cap: '#33291c' }
   ];
@@ -79,6 +79,17 @@
   }
 
   function nameOf(seat) { return (figures[seat] && figures[seat].name) || ('Player ' + seat); }
+
+  function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
+
+  // Avatar markup for a figure: a real portrait photo when one is provided,
+  // otherwise the hand-drawn illustrated SVG fallback (used for You and any
+  // figure without artwork). The <img> fills the round avatar frame via CSS
+  // (object-fit: cover), matching the SVG portraits' sizing.
+  function avatarMarkup(f) {
+    if (f.photo) return '<img src="' + escapeAttr(f.photo) + '" alt="' + escapeAttr(f.name) + '">';
+    return avatarSVG(f);
+  }
 
   // Build a shaded illustrated portrait (100x100 viewBox) for a figure.
   function avatarSVG(f) {
@@ -177,7 +188,7 @@
     return p.join('');
   }
 
-  if (window.__OKEY_FAST) window.__okeyAvatars = { build: avatarSVG, pool: [YOU_FIGURE].concat(FIGURE_POOL) };
+  if (window.__OKEY_FAST) window.__okeyAvatars = { build: avatarMarkup, pool: [YOU_FIGURE].concat(FIGURE_POOL) };
 
   function drawEye(p, cx, cy, iris, kohl) {
     iris = iris || '#3a2a1a';
@@ -467,7 +478,7 @@
     var card = seat.querySelector('.player-card');
     seat.querySelector('.player-name').textContent = nameOf(s);
     var avatar = seat.querySelector('.avatar');
-    if (avatar && figures[s]) avatar.innerHTML = avatarSVG(figures[s]);
+    if (avatar && figures[s]) avatar.innerHTML = avatarMarkup(figures[s]);
     var diffSpan = seat.querySelector('.player-diff');
     if (s === HUMAN) diffSpan.textContent = 'human';
     else diffSpan.textContent = game.aiDifficulty(s);

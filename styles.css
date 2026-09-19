@@ -17,6 +17,12 @@
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
+html {
+  /* Prevent iOS Safari from auto-boosting font sizes in narrow columns,
+     which otherwise blows up carefully sized compact mobile layouts. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 html, body {
   margin: 0;
   height: 100%;
@@ -373,19 +379,25 @@ html, body {
   }
   .seat-bottom { display: none; }           /* your hand is right below — no need for a You card */
   .mini-hand { display: none; }             /* face-down stacks cost too much height */
-  .player-card { min-width: 0; padding: 4px 6px; }
-  .avatar { width: 34px; height: 34px; }
-  .player-name { font-size: 12px; }
-  .player-diff { font-size: 9px; }
-  .player-stats { font-size: 10px; }
-  .discard-pile { min-width: 38px; min-height: 50px; }
-  .seat { gap: 3px; }
+  /* Keep the opponent+discard row compact and capped so "Lay Tiles" below it
+     stays the dominant area, matching the sketch's proportions — regardless
+     of device font metrics. */
+  .player-card { min-width: 0; padding: 2px 4px; line-height: 1.15; }
+  .avatar { width: 22px; height: 22px; margin: 0 auto 1px; line-height: 22px; font-size: 14px; }
+  .player-name { font-size: 10px; }
+  .player-diff { font-size: 8px; }
+  .player-stats { font-size: 8px; }
+  .opened-badge { font-size: 8px; padding: 1px 4px; top: -6px; right: -6px; }
+  .discard-pile { min-width: 26px; min-height: 34px; }
+  .seat { gap: 2px; }
 
   /* Center = the shared melds ("Lay Tiles") panel, a slim Stock tab
-     attached to its left edge and vertically centered against it. */
+     attached to its left edge and vertically centered against it. The
+     tab fills its cell (never a fixed height) so it can't overflow and
+     get clipped when the row ends up shorter than expected. */
   #center {
     display: grid;
-    grid-template-columns: 30px 1fr;
+    grid-template-columns: 26px 1fr;
     align-items: stretch;
     gap: 5px;
     width: 100%;
@@ -393,8 +405,9 @@ html, body {
   }
   .stock {
     align-self: center;
-    width: 30px;
-    height: 84px;
+    width: 26px;
+    height: 100%;
+    max-height: 100px;
     border-radius: 10px 0 0 10px;
   }
   .stock-back { border-radius: 10px 0 0 10px; }

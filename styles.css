@@ -367,25 +367,40 @@ html, body {
   .discard-pile { min-width: 38px; min-height: 50px; }
   .seat { gap: 3px; }
 
-  /* Center = the shared melds table. Stock sits compactly on top. */
+  /* Center = the shared melds ("Lay Tiles") panel, a slim Stock tab
+     attached to its left edge and vertically centered against it. */
   #center {
-    gap: 6px;
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    align-items: stretch;
+    gap: 5px;
     width: 100%;
     height: 100%;
-    justify-content: flex-start;
   }
-  .stock { width: 46px; height: 60px; flex: 0 0 auto; }
+  .stock {
+    align-self: center;
+    width: 30px;
+    height: 84px;
+    border-radius: 10px 0 0 10px;
+  }
+  .stock-back { border-radius: 10px 0 0 10px; }
+  #stock-label {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+  }
   #melds-area {
-    flex: 1 1 auto;
     width: 100%;
+    height: 100%;
     max-height: none;
     overflow-y: auto;
     align-content: flex-start;
     gap: 6px;
     padding: 6px;
     background: rgba(0, 0, 0, 0.16);
-    border-radius: 10px;
+    border-radius: 0 10px 10px 0;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: none;
   }
   .melds-hint { align-self: center; margin: auto; }
   .table-meld { padding: 3px; }
